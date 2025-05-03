@@ -1,0 +1,62 @@
+# Compiled class file
+*.class
+
+# Log file
+*.log
+*.txt
+
+# BlueJ files
+*.ctxt
+
+# Mobile Tools for Java (J2ME)
+.mtj.tmp/
+
+# Package Files #
+*.jar
+*.war
+*.ear
+
+# virtual machine crash logs, see http://openjdk.java.net/projects/hotspot/
+hs_err_pid*
+
+# Bytecode outline files
+*.jcod
+
+# Local configuration file (users settings)
+.idea/workspace.xml
+.idea/tasks.xml
+.idea/gradle.xml
+.idea/modules.xml
+.idea/compiler.xml
+.idea/modules
+*.iws
+
+# Gradle
+.gradle
+/build
+
+# Local Maven repository
+.mvn/wrapper/maven-wrapper.jar
+
+# Eclipse
+.settings/
+bin/
+tmp/
+tmp/**/*
+.apt_generated/
+.classpath
+.project
+
+# NetBeans
+nbproject/
+build/
+dist/
+!**/src/main/**
+!**/src/test/**
+
+# VS Code
+.vscode/
+
+# OS generated files
+.DS_Store*
+Thumbs.db
