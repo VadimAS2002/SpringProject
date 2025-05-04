@@ -53,7 +53,7 @@ public class TaskService {
     }
 
     public List<Task> getPendingTasks() {
-        return taskRepository.findByCompleted(false);
+        return taskRepository.findByCompletedAndDeleted(false, false);
     }
 
     public void deleteTask(Long id) {

@@ -9,5 +9,5 @@ import java.util.List;
 @Repository
 public interface TaskRepository extends JpaRepository<Task, Long> {
     List<Task> findByUserId(Long userId);
-    List<Task> findByCompleted(Boolean completed);
+    List<Task> findByCompletedAndDeleted(Boolean completed, Boolean deleted);
 }

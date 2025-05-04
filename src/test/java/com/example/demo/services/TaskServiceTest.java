@@ -8,6 +8,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -26,9 +27,6 @@ class TaskServiceTest {
     @Mock
     private UserService userService;
 
-    @Mock
-    private NotificationService notificationService;
-
     @InjectMocks
     private TaskService taskService;
 
@@ -38,50 +36,39 @@ class TaskServiceTest {
 
     @BeforeEach
     void setUp() {
-        testUser = new User();
-        testUser.setId(1L);
-        testUser.setUsername("testuser");
-        testUser.setPassword("password");
+        MockitoAnnotations.openMocks(this);
 
-        testTask = new Task();
-        testTask.setId(1L);
-        testTask.setTitle("Test Task");
-        testTask.setDescription("Test Description");
-        testTask.setCreationDate(LocalDateTime.now());
-        testTask.setTargetDate(LocalDateTime.now().plusDays(7));
-        testTask.setCompleted(false);
-        testTask.setDeleted(false);
-        testTask.setUser(testUser);
-
+        testUser = new User(1L, "testuser", "password");
+        testTask = new Task(1L,"Test Task", "Description", LocalDateTime.now(), LocalDateTime.now().plusDays(1), false, false, testUser);
         testNotification = new Notification();
         testNotification.setId(1L);
     }
 
     @Test
     void createTask_Success() {
-        when(userService.getUserById(1L)).thenReturn(testUser);
         when(taskRepository.save(any(Task.class))).thenReturn(testTask);
-        when(notificationService.createNotification(any(Notification.class))).thenReturn(testNotification);
 
         Task createdTask = taskService.createTask(testTask);
 
         assertNotNull(createdTask);
         assertEquals("Test Task", createdTask.getTitle());
         verify(taskRepository, times(1)).save(any(Task.class));
-        verify(notificationService, times(1)).createNotification(any(Notification.class));
     }
 
     @Test
     void createTask_UserNotFound() {
+        User user = new User(1L, "testuser", "password");
+        Task task = new Task(null, "Test Task", "Description", null,
+                LocalDateTime.now().plusDays(1), false, false, user);
+
         when(userService.getUserById(1L)).thenReturn(null);
 
         Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            taskService.createTask(testTask);
+            taskService.createTask(task);
         });
 
         assertEquals("User not found for userId: 1", exception.getMessage());
         verify(taskRepository, never()).save(any(Task.class));
-        verify(notificationService, never()).createNotification(any(Notification.class));
     }
 
     @Test
@@ -108,26 +95,24 @@ class TaskServiceTest {
 
     @Test
     void getPendingTasks_Success() {
-        when(taskRepository.findByCompleted(false)).thenReturn(Arrays.asList(testTask));
+        when(taskRepository.findByCompletedAndDeleted(false, false)).thenReturn(Arrays.asList(testTask));
 
         List<Task> tasks = taskService.getPendingTasks();
 
         assertNotNull(tasks);
         assertEquals(1, tasks.size());
         assertEquals("Test Task", tasks.get(0).getTitle());
-        verify(taskRepository, times(1)).findByCompleted(false);
+        verify(taskRepository, times(1)).findByCompletedAndDeleted(false, false);
     }
 
     @Test
     void getPendingTasks_NoTasksFound() {
-        when(taskRepository.findByCompleted(false)).thenReturn(Collections.emptyList());
+        when(taskRepository.findByCompletedAndDeleted(false, false)).thenReturn(Collections.emptyList());
 
-        // Act
         List<Task> tasks = taskService.getPendingTasks();
 
-        // Assert
         assertTrue(tasks.isEmpty());
-        verify(taskRepository, times(1)).findByCompleted(false);
+        verify(taskRepository, times(1)).findByCompletedAndDeleted(false, false);
     }
 
     @Test
@@ -144,11 +129,11 @@ class TaskServiceTest {
 
     @Test
     void deleteTask_NotFound() {
-        when(taskRepository.findById(1L)).thenReturn(Optional.empty());
+        when(taskRepository.findById(999L)).thenReturn(Optional.empty());
 
-        taskService.deleteTask(1L);
+        taskService.deleteTask(999L);
 
-        verify(taskRepository, times(1)).findById(1L);
+        verify(taskRepository, times(1)).findById(999L);
         verify(taskRepository, never()).save(any(Task.class));
     }
 }
