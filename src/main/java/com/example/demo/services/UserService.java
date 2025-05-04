@@ -1,32 +1,32 @@
 package com.example.demo.services;
 
-import com.example.demo.models.User;
+import com.example.demo.db.User;
+import com.example.demo.db.repositories.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.Optional;
 
 @Service
 public class UserService {
 
-    private final Map<Long, User> users = new HashMap<>();
-    private final AtomicLong idGenerator = new AtomicLong(1);
+    private final UserRepository userRepository;
+
+    @Autowired
+    public UserService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
 
     public User registerUser(User user) {
-        user.setId(idGenerator.getAndIncrement());
-        users.put(user.getId(), user);
-        return user;
+        return userRepository.save(user);
     }
 
     public User loginUser(String username, String password) {
-        return users.values().stream()
-                .filter(user -> user.getUsername().equals(username) && user.getPassword().equals(password))
-                .findFirst()
-                .orElse(null);
+        return userRepository.findByUsernameAndPassword(username, password);
     }
 
     public User getUserById(Long id) {
-        return users.get(id);
+        Optional<User> optionalUser = userRepository.findById(id);
+        return optionalUser.orElse(null);
     }
 }

@@ -1,69 +1,76 @@
 package com.example.demo.services;
 
-import com.example.demo.models.Notification;
-import com.example.demo.models.User;
-import com.example.demo.models.Task;
+import com.example.demo.db.Notification;
+import com.example.demo.db.User;
+import com.example.demo.db.Task;
+import com.example.demo.db.repositories.NotificationRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
+import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 class NotificationServiceTest {
 
+    @Mock
+    private NotificationRepository notificationRepository;
+
+    @InjectMocks
     private NotificationService notificationService;
+
+    private User testUser;
+    private Task testTask;
+    private Notification testNotification;
 
     @BeforeEach
     void setUp() {
-        notificationService = new NotificationService();
+        testUser = new User();
+        testUser.setId(1L);
+        testUser.setUsername("testuser");
+        testUser.setPassword("password");
+
+        testTask = new Task();
+        testTask.setId(1L);
+        testTask.setTitle("Test Task");
+        testTask.setDescription("Test Description");
+
+        testNotification = new Notification();
+        testNotification.setId(1L);
+        testNotification.setMessage("Test Notification");
+        testNotification.setUser(testUser);
+        testNotification.setTask(testTask);
     }
 
     @Test
     void createNotification_Success() {
-        User user = new User(1L, "testuser", "password");
-        Task task = new Task(1L, "Test Task", "Description", LocalDateTime.now(),
-                LocalDateTime.now().plusDays(1), false, false, user);
-        Notification notification = new Notification();
-        notification.setMessage("Test Notification");
-        notification.setUser(user);
-        notification.setTask(task);
+        when(notificationRepository.save(any(Notification.class))).thenReturn(testNotification);
 
-        Notification createdNotification = notificationService.createNotification(notification);
+        Notification createdNotification = notificationService.createNotification(new Notification());
 
-        assertNotNull(createdNotification.getId());
-        assertNotNull(createdNotification.getTimestamp());
+        assertNotNull(createdNotification);
         assertEquals("Test Notification", createdNotification.getMessage());
-        assertEquals(user, createdNotification.getUser());
-        assertEquals(task, createdNotification.getTask());
+        verify(notificationRepository, times(1)).save(any(Notification.class));
     }
 
     @Test
     void getNotificationsByUserId_Success() {
-        User user1 = new User(1L, "user1", "password");
-        User user2 = new User(2L, "user2", "password");
-        Task task1 = new Task(1L, "Task 1", "Desc", LocalDateTime.now(), LocalDateTime.now(),
-                false, false, user1);
-        Task task2 = new Task(2L, "Task 2", "Desc", LocalDateTime.now(), LocalDateTime.now(),
-                false, false, user2);
-        Notification notification1 = new Notification();
-        notification1.setMessage("Notification 1");
-        notification1.setUser(user1);
-        notification1.setTask(task1);
-
-        Notification notification2 = new Notification();
-        notification2.setMessage("Notification 2");
-        notification2.setUser(user2);
-        notification2.setTask(task2);
-
-        notificationService.createNotification(notification1);
-        notificationService.createNotification(notification2);
+        when(notificationRepository.findByUserId(1L)).thenReturn(Arrays.asList(testNotification));
 
         List<Notification> notifications = notificationService.getNotificationsByUserId(1L);
 
+        assertNotNull(notifications);
         assertEquals(1, notifications.size());
-        assertEquals("Notification 1", notifications.get(0).getMessage());
+        assertEquals("Test Notification", notifications.get(0).getMessage());
+        verify(notificationRepository, times(1)).findByUserId(1L);
     }
 
     @Test

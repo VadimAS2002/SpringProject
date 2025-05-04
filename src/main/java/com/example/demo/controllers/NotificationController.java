@@ -1,6 +1,6 @@
 package com.example.demo.controllers;
 
-import com.example.demo.models.Notification;
+import com.example.demo.db.Notification;
 import com.example.demo.services.NotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -21,8 +21,8 @@ public class NotificationController {
 
     @GetMapping("/pending/{userId}")
     public ResponseEntity<List<Notification>> getPendingNotifications(@PathVariable Long userId) {
-        List<Notification> pendingNotifications = notificationService.getPendingNotifications(userId);
-        return ResponseEntity.ok(pendingNotifications);
+        List<Notification> notifications = notificationService.getNotificationsByUserId(userId);
+        return ResponseEntity.ok(notifications);
     }
 
     @GetMapping("/user/{userId}")

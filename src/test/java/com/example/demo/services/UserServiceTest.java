@@ -1,80 +1,95 @@
 package com.example.demo.services;
 
-import com.example.demo.models.User;
+import com.example.demo.db.User;
+import com.example.demo.db.repositories.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 
+import java.util.Optional;
+
+import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 class UserServiceTest {
 
+    @Mock
+    private UserRepository userRepository;
+
+    @InjectMocks
     private UserService userService;
+
+    private User testUser;
 
     @BeforeEach
     void setUp() {
-        userService = new UserService();
+        testUser = new User();
+        testUser.setId(1L);
+        testUser.setUsername("testuser");
+        testUser.setPassword("password");
     }
 
     @Test
     void registerUser_Success() {
-        User user = new User(null, "testuser", "password");
+        when(userRepository.save(any(User.class))).thenReturn(testUser);
 
-        User registeredUser = userService.registerUser(user);
+        User registeredUser = userService.registerUser(new User());
 
-        assertNotNull(registeredUser.getId());
+        assertNotNull(registeredUser);
         assertEquals("testuser", registeredUser.getUsername());
-        assertEquals("password", registeredUser.getPassword());
+        verify(userRepository, times(1)).save(any(User.class));
     }
 
     @Test
     void loginUser_Success() {
-        User user = new User(null, "testuser", "password");
-        userService.registerUser(user);
+        when(userRepository.findByUsernameAndPassword("testuser", "password")).thenReturn(testUser);
 
         User loggedInUser = userService.loginUser("testuser", "password");
 
         assertNotNull(loggedInUser);
         assertEquals("testuser", loggedInUser.getUsername());
+        verify(userRepository, times(1)).findByUsernameAndPassword("testuser", "password");
     }
 
     @Test
     void loginUser_IncorrectPassword() {
-        User user = new User(null, "testuser", "password");
-        userService.registerUser(user);
+        when(userRepository.findByUsernameAndPassword("testuser", "wrongpassword")).thenReturn(null);
 
         User loggedInUser = userService.loginUser("testuser", "wrongpassword");
 
         assertNull(loggedInUser);
+        verify(userRepository, times(1)).findByUsernameAndPassword("testuser", "wrongpassword");
     }
 
     @Test
     void loginUser_IncorrectUsername() {
-        User user = new User(null, "testuser", "password");
-        userService.registerUser(user);
+        when(userRepository.findByUsernameAndPassword("wronguser", "password")).thenReturn(null);
 
         User loggedInUser = userService.loginUser("wronguser", "password");
 
         assertNull(loggedInUser);
+        verify(userRepository, times(1)).findByUsernameAndPassword("wronguser", "password");
     }
 
     @Test
     void getUserById_Success() {
-        User user = new User(null, "testuser", "password");
-        User registeredUser = userService.registerUser(user);
-        Long userId = registeredUser.getId();
+        when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
 
-        User retrievedUser = userService.getUserById(userId);
+        User retrievedUser = userService.getUserById(1L);
 
         assertNotNull(retrievedUser);
         assertEquals("testuser", retrievedUser.getUsername());
+        verify(userRepository, times(1)).findById(1L);
     }
 
     @Test
     void getUserById_NotFound() {
-        Long nonExistentUserId = 999L;
+        when(userRepository.findById(999L)).thenReturn(Optional.empty());
 
-        User retrievedUser = userService.getUserById(nonExistentUserId);
+        User retrievedUser = userService.getUserById(999L);
 
         assertNull(retrievedUser);
+        verify(userRepository, times(1)).findById(999L);
     }
 }

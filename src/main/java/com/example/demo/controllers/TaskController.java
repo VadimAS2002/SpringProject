@@ -1,7 +1,7 @@
 package com.example.demo.controllers;
 
-import com.example.demo.models.Task;
-import com.example.demo.models.User;
+import com.example.demo.db.Task;
+import com.example.demo.db.User;
 import com.example.demo.services.TaskService;
 import com.example.demo.services.UserService;
 
@@ -44,7 +44,7 @@ public class TaskController {
         }
         try {
             User user = userService.getUserById(task.getUser().getId());
-            if(user == null){
+            if (user == null) {
                 return ResponseEntity.badRequest().build();
             }
             task.setUser(user);

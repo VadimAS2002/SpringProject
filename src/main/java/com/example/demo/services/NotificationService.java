@@ -1,37 +1,29 @@
 package com.example.demo.services;
 
-import com.example.demo.models.Notification;
+import com.example.demo.db.Notification;
+import com.example.demo.db.repositories.NotificationRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.stream.Collectors;
 
 @Service
 public class NotificationService {
 
-    private final Map<Long, Notification> notifications = new HashMap<>();
-    private final AtomicLong idGenerator = new AtomicLong(1);
+    @Autowired
+    private NotificationRepository notificationRepository;
 
     public Notification createNotification(Notification notification) {
-        notification.setId(idGenerator.getAndIncrement());
         notification.setTimestamp(LocalDateTime.now());
-        notifications.put(notification.getId(), notification);
-        return notification;
+        return notificationRepository.save(notification);
     }
 
     public List<Notification> getNotificationsByUserId(Long userId) {
-        return notifications.values().stream()
-                .filter(notification -> notification.getUser() != null && notification.getUser().getId().equals(userId))
-                .collect(Collectors.toList());
+        return notificationRepository.findByUserId(userId);
     }
 
     public List<Notification> getPendingNotifications(Long userId) {
-        return notifications.values().stream()
-                .filter(notification -> !notification.getRead() && notification.getUser() != null && notification.getUser().getId().equals(userId))
-                .collect(Collectors.toList());
+        return notificationRepository.findByUserIdAndRead(userId, false);
     }
 }

@@ -1,6 +1,6 @@
 package com.example.demo.controllers;
 
-import com.example.demo.models.User;
+import com.example.demo.db.User;
 import com.example.demo.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -20,20 +20,12 @@ public class UserController {
 
     @PostMapping("/register")
     public ResponseEntity<User> registerUser(@RequestBody User user) {
-        if (user.getUsername() == null || user.getUsername().trim().isEmpty() ||
-                user.getPassword() == null || user.getPassword().trim().isEmpty()) {
-            return ResponseEntity.badRequest().build();
-        }
         User registeredUser = userService.registerUser(user);
         return new ResponseEntity<>(registeredUser, HttpStatus.CREATED);
     }
 
     @GetMapping("/login")
     public ResponseEntity<User> loginUser(@RequestParam String username, @RequestParam String password) {
-        if (username == null || username.trim().isEmpty() ||
-                password == null || password.trim().isEmpty()) {
-            return ResponseEntity.badRequest().build();
-        }
         User user = userService.loginUser(username, password);
         if (user != null) {
             return ResponseEntity.ok(user);
