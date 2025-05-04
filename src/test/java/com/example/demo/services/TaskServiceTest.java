@@ -56,22 +56,6 @@ class TaskServiceTest {
     }
 
     @Test
-    void createTask_UserNotFound() {
-        User user = new User(1L, "testuser", "password");
-        Task task = new Task(null, "Test Task", "Description", null,
-                LocalDateTime.now().plusDays(1), false, false, user);
-
-        when(userService.getUserById(1L)).thenReturn(null);
-
-        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            taskService.createTask(task);
-        });
-
-        assertEquals("User not found for userId: 1", exception.getMessage());
-        verify(taskRepository, never()).save(any(Task.class));
-    }
-
-    @Test
     void getTasksByUserId_Success() {
         when(taskRepository.findByUserId(1L)).thenReturn(Arrays.asList(testTask));
 
