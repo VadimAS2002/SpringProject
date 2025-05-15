@@ -1,5 +1,6 @@
 package com.example.demo.service;
 
+import com.example.demo.exception.InvalidDataException;
 import com.example.demo.model.Notification;
 import com.example.demo.model.User;
 import com.example.demo.repository.NotificationRepository;
@@ -25,6 +26,9 @@ public class NotificationService {
     }
 
     public void createNotification(User user, String message) {
+        if (message == null || message.isEmpty()) {
+            throw new InvalidDataException("Notification message cannot be empty.");
+        }
         Notification notification = new Notification(null, message, user, false, LocalDateTime.now());
         notificationRepository.createNotification(notification);
     }

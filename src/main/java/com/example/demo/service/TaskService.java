@@ -1,5 +1,6 @@
 package com.example.demo.service;
 
+import com.example.demo.exception.InvalidDataException;
 import com.example.demo.model.Task;
 import com.example.demo.model.User;
 import com.example.demo.repository.TaskRepository;
@@ -30,9 +31,10 @@ public class TaskService {
 
     public Task createTask(Task task) {
         User user = userService.getUserById(task.getUser().getId());
-        if (user == null) {
+        if (user == null)
             throw new IllegalArgumentException("User not found for userId: " + task.getUser().getId());
-        }
+        if (task.getDescription() == null || task.getDescription().isEmpty())
+            throw new InvalidDataException("Task description cannot be empty.");
 
         Task createdTask = taskRepository.createTask(task);
         task.setUser(user);

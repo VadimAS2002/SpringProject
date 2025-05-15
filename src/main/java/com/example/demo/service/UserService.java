@@ -1,7 +1,7 @@
 package com.example.demo.service;
 
+import com.example.demo.exception.InvalidDataException;
 import com.example.demo.exception.UserNotFoundException;
-import com.example.demo.model.Notification;
 import com.example.demo.model.User;
 import com.example.demo.repository.UserRepository;
 import org.springframework.stereotype.Service;
@@ -17,7 +17,15 @@ public class UserService {
     }
 
     public User registerUser(User user) {
-        notificationService.createNotification(user, "User " + user.getUsername() + " registered!");
+        if (user.getUsername() == null || user.getUsername().isEmpty()) {
+            throw new InvalidDataException("Username cannot be empty.");
+        }
+
+        if (user.getPassword() == null || user.getPassword().isEmpty()) {
+            throw new InvalidDataException("Password cannot be empty.");
+        }
+        User registeredUser = userRepository.createUser(user);
+        notificationService.createNotification(registeredUser, "User " + user.getUsername() + " registered!");
         return userRepository.createUser(user);
     }
 
