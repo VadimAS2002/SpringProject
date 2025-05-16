@@ -35,6 +35,8 @@ public class TaskService {
             throw new IllegalArgumentException("User not found for userId: " + task.getUser().getId());
         if (task.getDescription() == null || task.getDescription().isEmpty())
             throw new InvalidDataException("Task description cannot be empty.");
+        if (task.getTitle() == null || task.getTitle().isEmpty())
+            throw new InvalidDataException("Task title cannot be empty.");
 
         Task createdTask = taskRepository.createTask(task);
         task.setUser(user);
