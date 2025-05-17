@@ -10,8 +10,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import java.util.Optional;
-
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
@@ -98,9 +96,9 @@ class UserControllerTest {
         Long userId = 1L;
         User testUser = new User(userId, "testuser", "password");
 
-        when(userService.login(testUser.getUsername())).thenReturn(Optional.of(testUser));
+        when(userService.login(testUser.getUsername())).thenReturn(testUser);
 
-        ResponseEntity<Optional<User>> responseEntity = userController.login(testUser.getUsername());
+        ResponseEntity<User> responseEntity = userController.login(testUser.getUsername());
 
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         assertNotNull(responseEntity.getBody());

@@ -1,58 +1,50 @@
 package com.example.demo.service;
 
-import com.example.demo.exception.InvalidDataException;
 import com.example.demo.model.Task;
 import com.example.demo.model.User;
+import com.example.demo.repository.TaskRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.stream.Collectors;
 
 @Service
 public class TaskService {
-    private final List<Task> tasks = new ArrayList<>();
-    private static final AtomicLong taskId = new AtomicLong(1);
+    private final TaskRepository taskRepository;
     private final NotificationService notificationService;
     private UserService userService;
 
-    public TaskService(NotificationService notificationService, UserService userService) {
+    public TaskService(TaskRepository taskRepository, NotificationService notificationService,
+                       UserService userService) {
+        this.taskRepository = taskRepository;
         this.notificationService = notificationService;
         this.userService = userService;
     }
 
     public List<Task> getPendingTasks() {
-        return tasks.stream().filter(t -> !t.isCompleted() && !t.isDeleted()).collect(Collectors.toList());
+        return taskRepository.getPendingTasks();
     }
 
     public List<Task> getAllTasksByUserId(Long userId) {
-        return tasks.stream()
-                .filter(t -> !t.isDeleted() && t.getUser().getId().equals(userId))
-                .collect(Collectors.toList());
+        return taskRepository.getAllTasksByUserId(userId);
     }
 
     public Task createTask(Task task) {
         User user = userService.getUserById(task.getUser().getId());
-        if (user == null)
+        if (user == null) {
             throw new IllegalArgumentException("User not found for userId: " + task.getUser().getId());
-        if (task.getDescription() == null || task.getDescription().isEmpty())
-            throw new InvalidDataException("Task description cannot be empty.");
-        if (task.getTitle() == null || task.getTitle().isEmpty())
-            throw new InvalidDataException("Task title cannot be empty.");
+        }
 
-        task.setId(taskId.getAndIncrement());
-        tasks.add(task);
+        Task createdTask = taskRepository.save(task);
         task.setUser(user);
         notificationService.createNotification(task.getUser(), "Task " + task.getTitle() + " created!");
-        return task;
+        return createdTask;
     }
 
     public void deleteTask(Long id) {
-        Task task = tasks.stream().filter(t -> t.getId().equals(id)).findFirst().orElse(null);
+        Task task = taskRepository.getTaskById(id);
         if (task != null) {
             notificationService.createNotification(task.getUser(), "Task " + task.getTitle() + " deleted!");
-            tasks.stream().filter(t -> t.getId().equals(id)).forEach(t -> t.setDeleted(true));
+            taskRepository.deleteTask(id);
         }
     }
 }

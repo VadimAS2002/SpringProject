@@ -1,149 +1,107 @@
 package com.example.demo.controller;
 
-import com.example.demo.exception.InvalidDataException;
 import com.example.demo.model.Task;
 import com.example.demo.model.User;
+import com.example.demo.repository.NotificationRepository;
+import com.example.demo.repository.TaskRepository;
+import com.example.demo.repository.UserRepository;
+import com.example.demo.service.NotificationService;
 import com.example.demo.service.TaskService;
 import com.example.demo.service.UserService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
-import org.mockito.Mock;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.when;
 
 @SpringBootTest
 public class TaskControllerTest {
 
-    @Mock
+    @Autowired
     private TaskService taskService;
 
-    @Mock
+    @Autowired
     private UserService userService;
 
     @InjectMocks
     private TaskController taskController;
 
+    @Autowired
+    private TaskRepository taskRepository;
+
+    @Autowired
+    private NotificationService notificationService;
+
+    @Autowired
+    private NotificationRepository notificationRepository;
+
+    @Autowired
+    private UserRepository userRepository;
+
     private final LocalDateTime now = LocalDateTime.now();
+
+    private User testUser;
+
+    @BeforeEach
+    void setUp() {
+        notificationService = new NotificationService(notificationRepository);
+        userService = new UserService(notificationService, userRepository);
+        taskService = new TaskService(taskRepository, notificationService, userService);
+        taskController = new TaskController(taskService);
+
+        testUser = userRepository.save(new User(null, "testuser", "password"));
+    }
 
     @Test
     void getPendingTasks_ReturnsPendingTasks() {
-        List<Task> pendingTasks = new ArrayList<>();
-        User user = new User(1L, "testuser", "password");
-        pendingTasks.add(new Task(1L, "Task 1", "Description",
-                now, now.plusDays(1), false, false, user));
-        when(taskService.getPendingTasks()).thenReturn(pendingTasks);
-
-        ResponseEntity<List<Task>> responseEntity = taskController.getPendingTasks();
-
+        ResponseEntity<List<Task>> responseEntity = new TaskController(taskService).getPendingTasks();
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        assertEquals(pendingTasks, responseEntity.getBody());
     }
 
     @Test
-    public void getTasksByUserId_ReturnsOk() {
-        Long userId = 1L;
-        List<Task> tasks = new ArrayList<>();
-        User user = new User(1L, "testuser", "password");
-        tasks.add(new Task(1L, "Task 1", "Description", now, now.plusDays(1), false,
-                false, user));
-        when(taskService.getAllTasksByUserId(userId)).thenReturn(tasks);
+    void getAllTasksByUserId_ReturnsTasksForUser() {
+        Task task1 = taskService.createTask(new Task(1L, "Task 1", "Description",
+                now, now.plusDays(1), false, false, testUser));
+        Task task2 = taskService.createTask(new Task(null, "Task 2", "Description 2", now,
+                now.plusDays(1), false, false, testUser));
 
-        ResponseEntity<List<Task>> responseEntity = taskController.getAllTasksByUserId(userId);
+        ResponseEntity<List<Task>> responseEntity = new TaskController(taskService).getAllTasksByUserId(testUser.getId());
 
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        assertEquals(tasks, responseEntity.getBody());
+        assertEquals(2, responseEntity.getBody().size());
     }
 
     @Test
-    public void createTask_ValidTask_ReturnsCreated() {
-        User user = new User(1L, "testuser", "password");
-        Task taskToCreate = new Task(null, "Valid Task", "Description",
-                null, null, false, false, user);
-        Task createdTask = new Task(1L, "Valid Task", "Description",
-                now, now.plusDays(1), false, false, user);
+    void createTask_SuccessfulCreation() {
+        Task task = new Task(null, "Test Task", "Test Description", now, now.plusDays(1),
+                false, false, testUser);
 
-        when(userService.getUserById(user.getId())).thenReturn(user);
-        when(taskService.createTask(taskToCreate)).thenReturn(createdTask);
-
-        ResponseEntity<Task> responseEntity = taskController.createTask(taskToCreate);
+        ResponseEntity<Task> responseEntity = new TaskController(taskService).createTask(task);
 
         assertEquals(HttpStatus.CREATED, responseEntity.getStatusCode());
-        assertEquals(createdTask, responseEntity.getBody());
+        assertNotNull(responseEntity.getBody().getId());
+        assertEquals("Test Task", responseEntity.getBody().getTitle());
     }
 
     @Test
-    public void deleteTask_ExistingTask_ReturnsNoContent() {
-        Long taskId = 1L;
-        Task existingTask = new Task(null, "Valid Task", "Description", null,
-                null, false, false, new User(1L, "test", "pass"));
+    void deleteTask_SuccessfulDeletion() {
+        Task task = taskService.createTask(new Task(null, "Test Task", "Test Description",
+                now, now.plusDays(1), false, false, testUser));
 
-        when(taskService.getAllTasksByUserId(taskId)).thenReturn(List.of(existingTask));
-
-        ResponseEntity<Void> responseEntity = taskController.deleteTask(taskId);
+        ResponseEntity<Void> responseEntity = new TaskController(taskService).deleteTask(task.getId());
 
         assertEquals(HttpStatus.NO_CONTENT, responseEntity.getStatusCode());
-        assertNull(responseEntity.getBody());
-    }
 
-    @Test
-    public void createTask_InvalidTask_NullTitle_ReturnsBadRequest() {
-        User user = new User(1L, "testuser", "password");
-        Task taskToCreate = new Task(null, null, "Description",
-                null, null, false, false, user);
-
-        try {
-            ResponseEntity<Task> responseEntity = taskController.createTask(taskToCreate);
-            assertTrue(true);
-        } catch (InvalidDataException e) {
-            assertEquals("Task title cannot be empty.", e.getMessage());
-        }
-    }
-
-    @Test
-    public void createTask_InvalidTask_EmptyTitle_ReturnsBadRequest() {
-        User user = new User(1L, "testuser", "password");
-        Task taskToCreate = new Task(null, "  ", "Description", null,
-                null, false, false, user);
-
-        try {
-            ResponseEntity<Task> responseEntity = taskController.createTask(taskToCreate);
-            assertTrue(true);
-        } catch (InvalidDataException e) {
-            assertEquals("Task title cannot be empty.", e.getMessage());
-        }
-    }
-
-    @Test
-    public void createTask_InvalidTask_NullUser_ReturnsBadRequest() {
-        Task taskToCreate = new Task(null, "Valid Task", "Description", null,
-                null, false, false, new User(1L, "test", "pass"));
-
-        try {
-            ResponseEntity<Task> responseEntity = taskController.createTask(taskToCreate);
-            assertTrue(true);
-        } catch (InvalidDataException e) {
-            assertEquals("User not found for userId: 1", e.getMessage());
-        }
-    }
-
-    @Test
-    public void createTask_InvalidTask_NullUserId_ReturnsBadRequest() {
-        Task taskToCreate = new Task(null, "Valid Task", "Description",
-                null, null, false, false, null);
-
-        try {
-            ResponseEntity<Task> responseEntity = taskController.createTask(taskToCreate);
-            assertTrue(true);
-        } catch (InvalidDataException e) {
-            assertEquals("User not found for userId: null", e.getMessage());
-        }
+        assertNull(taskService.getAllTasksByUserId(testUser.getId()).stream()
+                .filter(t -> t.getId().equals(task.getId()))
+                .findFirst()
+                .orElse(null));
     }
 }

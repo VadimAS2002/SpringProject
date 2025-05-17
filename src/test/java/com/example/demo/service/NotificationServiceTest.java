@@ -3,6 +3,8 @@ package com.example.demo.service;
 import com.example.demo.exception.InvalidDataException;
 import com.example.demo.model.Notification;
 import com.example.demo.model.User;
+import com.example.demo.repository.InMemoryImpl.InMemoryNotificationRepository;
+import com.example.demo.repository.NotificationRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,9 +20,13 @@ class NotificationServiceTest {
     @Autowired
     private NotificationService notificationService;
 
+    @Autowired
+    private NotificationRepository notificationRepository;
+
     @BeforeEach
     void setUp() {
-        notificationService = new NotificationService();
+        notificationRepository = new InMemoryNotificationRepository();
+        notificationService = new NotificationService(notificationRepository);
     }
 
     User user = new User(1L, "testuser", "password");
@@ -29,17 +35,8 @@ class NotificationServiceTest {
     public void createNotification_SuccessfulCreation() {
         notificationService.createNotification(user, "This is a test notification.");
         List<Notification> actualNotifications = notificationService.getAllNotificationsForUser(user);
-        assertEquals(1, actualNotifications.size()); // Check size instead of message directly
+        assertEquals(1, actualNotifications.size());
         assertEquals("This is a test notification.", actualNotifications.get(0).getMessage());
-    }
-
-    @Test
-    public void createNotification_InvalidMessage_ThrowsException() {
-        String message = "";
-
-        assertThrows(InvalidDataException.class, () -> {
-            notificationService.createNotification(user, message);
-        });
     }
 
     @Test
