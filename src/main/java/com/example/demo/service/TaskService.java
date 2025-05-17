@@ -3,30 +3,33 @@ package com.example.demo.service;
 import com.example.demo.exception.InvalidDataException;
 import com.example.demo.model.Task;
 import com.example.demo.model.User;
-import com.example.demo.repository.TaskRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 
 @Service
 public class TaskService {
-    private final TaskRepository taskRepository;
+    private final List<Task> tasks = new ArrayList<>();
+    private static final AtomicLong taskId = new AtomicLong(1);
     private final NotificationService notificationService;
     private UserService userService;
 
-    public TaskService(TaskRepository taskRepository, NotificationService notificationService,
-                       UserService userService) {
-        this.taskRepository = taskRepository;
+    public TaskService(NotificationService notificationService, UserService userService) {
         this.notificationService = notificationService;
         this.userService = userService;
     }
 
     public List<Task> getPendingTasks() {
-        return taskRepository.getPendingTasks();
+        return tasks.stream().filter(t -> !t.isCompleted() && !t.isDeleted()).collect(Collectors.toList());
     }
 
     public List<Task> getAllTasksByUserId(Long userId) {
-        return taskRepository.getAllTasksByUserId(userId);
+        return tasks.stream()
+                .filter(t -> !t.isDeleted() && t.getUser().getId().equals(userId))
+                .collect(Collectors.toList());
     }
 
     public Task createTask(Task task) {
@@ -38,17 +41,18 @@ public class TaskService {
         if (task.getTitle() == null || task.getTitle().isEmpty())
             throw new InvalidDataException("Task title cannot be empty.");
 
-        Task createdTask = taskRepository.createTask(task);
+        task.setId(taskId.getAndIncrement());
+        tasks.add(task);
         task.setUser(user);
         notificationService.createNotification(task.getUser(), "Task " + task.getTitle() + " created!");
-        return createdTask;
+        return task;
     }
 
     public void deleteTask(Long id) {
-        Task task = taskRepository.getTaskById(id);
+        Task task = tasks.stream().filter(t -> t.getId().equals(id)).findFirst().orElse(null);
         if (task != null) {
             notificationService.createNotification(task.getUser(), "Task " + task.getTitle() + " deleted!");
-            taskRepository.deleteTask(id);
+            tasks.stream().filter(t -> t.getId().equals(id)).forEach(t -> t.setDeleted(true));
         }
     }
 }

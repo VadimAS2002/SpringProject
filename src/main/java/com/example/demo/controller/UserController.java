@@ -6,6 +6,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Optional;
+
 @RestController
 @RequestMapping("/users")
 public class UserController {
@@ -16,9 +18,9 @@ public class UserController {
     }
 
     @GetMapping("/login/{username}")
-    public ResponseEntity<User> login(@PathVariable String username) {
-        User user = userService.login(username);
-        if (user != null) {
+    public ResponseEntity<Optional<User>> login(@PathVariable String username) {
+        Optional<User> user = userService.login(username);
+        if (user.isPresent()) {
             return ResponseEntity.ok(user);
         }
         return ResponseEntity.notFound().build();

@@ -29,9 +29,7 @@ public class NotificationController {
     }
 
     @GetMapping("/pending")
-    public ResponseEntity<List<Notification>> getPendingNotificationsForUser(@PathVariable Long userId) {
-        User user = new User();
-        user.setId(userId);
+    public ResponseEntity<List<Notification>> getPendingNotificationsForUser() {
         List<Notification> notifications = notificationService.getPendingNotifications();
 
         notifications.forEach(n -> n.setRead(true));

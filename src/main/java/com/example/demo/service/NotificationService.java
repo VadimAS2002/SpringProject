@@ -3,26 +3,31 @@ package com.example.demo.service;
 import com.example.demo.exception.InvalidDataException;
 import com.example.demo.model.Notification;
 import com.example.demo.model.User;
-import com.example.demo.repository.NotificationRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 
 @Service
 public class NotificationService {
-    private final NotificationRepository notificationRepository;
+    private final List<Notification> notifications = new ArrayList<>();
+    private static final AtomicLong notificationId = new AtomicLong(1);
 
-    public NotificationService(NotificationRepository notificationRepository) {
-        this.notificationRepository = notificationRepository;
+    public NotificationService() {
+
     }
 
     public List<Notification> getAllNotificationsForUser(User user) {
-        return notificationRepository.getAllNotificationsForUser(user);
+        return notifications.stream()
+                .filter(n -> n.getUser().getId().equals(user.getId()))
+                .collect(Collectors.toList());
     }
 
     public List<Notification> getPendingNotifications() {
-        return notificationRepository.getPendingNotifications();
+        return notifications.stream().filter(n -> !n.isRead()).collect(Collectors.toList());
     }
 
     public void createNotification(User user, String message) {
@@ -30,6 +35,7 @@ public class NotificationService {
             throw new InvalidDataException("Notification message cannot be empty.");
         }
         Notification notification = new Notification(null, message, user, false, LocalDateTime.now());
-        notificationRepository.createNotification(notification);
+        notification.setId(notificationId.getAndIncrement());
+        notifications.add(notification);
     }
 }
