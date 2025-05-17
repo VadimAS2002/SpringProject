@@ -19,4 +19,16 @@ public class Task {
     private boolean completed;
     private boolean deleted;
     private User user;
+
+    public Task(Long id, String title, String description, LocalDateTime creationDate, LocalDateTime targetDate,
+                boolean completed, boolean deleted, User user) {
+        this.id = id;
+        this.title = title;
+        this.description = description;
+        this.creationDate = creationDate;
+        this.targetDate = targetDate;
+        this.completed = completed;
+        this.deleted = deleted;
+        this.user = user;
+    }
 }
