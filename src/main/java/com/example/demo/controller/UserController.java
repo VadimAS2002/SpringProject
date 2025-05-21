@@ -17,9 +17,9 @@ public class UserController {
         this.userService = userService;
     }
 
-    @GetMapping("/login/{username}")
-    public ResponseEntity<Optional<User>> login(@PathVariable String username) {
-        Optional<User> user = userService.login(username);
+    @GetMapping("/login/{id}")
+    public ResponseEntity<Optional<User>> login(@PathVariable Long id) {
+        Optional<User> user = Optional.ofNullable(userService.getUserById(id));
         if (user.isPresent()) {
             return ResponseEntity.ok(user);
         }

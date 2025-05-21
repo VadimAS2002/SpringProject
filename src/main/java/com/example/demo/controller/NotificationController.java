@@ -21,10 +21,8 @@ public class NotificationController {
     public ResponseEntity<List<Notification>> getAllNotificationsForUser(@PathVariable Long userId) {
         User user = new User();
         user.setId(userId);
-        List<Notification> notifications = notificationService.getAllNotificationsForUser(user);
-
+        List<Notification> notifications = notificationService.getAllNotificationsForUser(userId);
         notifications.forEach(n -> n.setRead(true));
-
         return ResponseEntity.ok(notifications);
     }
 

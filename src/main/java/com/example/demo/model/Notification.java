@@ -15,12 +15,12 @@ public class Notification {
     private String message;
     private LocalDateTime timestamp;
     private boolean read;
-    private User user;
+    private Long userId;
 
-    public Notification(Long id, String message, User user, boolean read, LocalDateTime timestamp) {
+    public Notification(Long id, String message, Long userId, boolean read, LocalDateTime timestamp) {
         this.id = id;
         this.message = message;
-        this.user = user;
+        this.userId = userId;
         this.read = read;
         this.timestamp = timestamp;
     }

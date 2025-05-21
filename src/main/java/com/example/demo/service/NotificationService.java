@@ -20,9 +20,9 @@ public class NotificationService {
 
     }
 
-    public List<Notification> getAllNotificationsForUser(User user) {
+    public List<Notification> getAllNotificationsForUser(Long userId) {
         return notifications.stream()
-                .filter(n -> n.getUser().getId().equals(user.getId()))
+                .filter(n -> n.getUserId().equals(userId))
                 .collect(Collectors.toList());
     }
 
@@ -30,11 +30,11 @@ public class NotificationService {
         return notifications.stream().filter(n -> !n.isRead()).collect(Collectors.toList());
     }
 
-    public void createNotification(User user, String message) {
+    public void createNotification(Long userId, String message) {
         if (message == null || message.isEmpty()) {
             throw new InvalidDataException("Notification message cannot be empty.");
         }
-        Notification notification = new Notification(null, message, user, false, LocalDateTime.now());
+        Notification notification = new Notification(null, message, userId, false, LocalDateTime.now());
         notification.setId(notificationId.getAndIncrement());
         notifications.add(notification);
     }

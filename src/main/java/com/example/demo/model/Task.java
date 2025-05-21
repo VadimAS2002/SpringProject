@@ -18,5 +18,5 @@ public class Task {
     private LocalDateTime targetDate;
     private boolean completed;
     private boolean deleted;
-    private User user;
+    private Long userId;
 }
