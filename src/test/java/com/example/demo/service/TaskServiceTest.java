@@ -41,9 +41,9 @@ class TaskServiceTest {
     @Test
     void getPendingTasks_ReturnsPendingTasks() {
         Task task1 = new Task(null, "Test 1", "Description 1", LocalDateTime.now(),
-                null, false, false, testUser);
+                null, false, false, testUser.getId());
         Task task2 = new Task(null, "Test 2", "Description 2", LocalDateTime.now(),
-                null, true, false, testUser);
+                null, true, false, testUser.getId());
         taskService.createTask(task1);
         taskService.createTask(task2);
 
@@ -56,9 +56,9 @@ class TaskServiceTest {
     @Test
     void getAllTasksByUserId_ReturnsTasksForUser() {
         Task task1 = new Task(null, "Test 1", "Description 1", LocalDateTime.now(),
-                null, false, false, testUser);
+                null, false, false, testUser.getId());
         Task task2 = new Task(null, "Test 2", "Description 2", LocalDateTime.now(),
-                null, false, false, testUser);
+                null, false, false, testUser.getId());
         taskService.createTask(task1);
         taskService.createTask(task2);
 
@@ -72,20 +72,20 @@ class TaskServiceTest {
     @Test
     void createTask_SuccessfulCreation() {
         Task task = new Task(null, "Test Task", "Test Description", LocalDateTime.now(),
-                null, false, false, testUser);
+                null, false, false, testUser.getId());
 
         Task createdTask = taskService.createTask(task);
 
         assertNotNull(createdTask.getId());
         assertEquals("Test Task", createdTask.getTitle());
         assertEquals("Test Description", createdTask.getDescription());
-        assertEquals(testUser, createdTask.getUser());
+        assertEquals(testUser.getId(), createdTask.getUserId());
     }
 
     @Test
     void createTask_InvalidDescription_ThrowsException() {
         Task task = new Task(null, "Test Task", "", LocalDateTime.now(),
-                null, false, false, testUser);
+                null, false, false, testUser.getId());
 
         assertThrows(InvalidDataException.class, () -> {
             taskService.createTask(task);
@@ -95,7 +95,7 @@ class TaskServiceTest {
     @Test
     void createTask_InvalidTitle_ThrowsException() {
         Task task = new Task(null, "", "Test Description", LocalDateTime.now(),
-                null, false, false, testUser);
+                null, false, false, testUser.getId());
 
         assertThrows(InvalidDataException.class, () -> {
             taskService.createTask(task);
@@ -105,7 +105,7 @@ class TaskServiceTest {
     @Test
     void deleteTask_SuccessfulDeletion() {
         Task task = new Task(null, "Test Task", "Test Description", LocalDateTime.now(),
-                null, false, false, testUser);
+                null, false, false, testUser.getId());
         Task createdTask = taskService.createTask(task);
         Long taskId = createdTask.getId();
 

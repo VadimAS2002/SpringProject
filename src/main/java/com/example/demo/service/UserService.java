@@ -30,14 +30,8 @@ public class UserService {
         }
         registeredUser.setId(userId.getAndIncrement());
         users.add(registeredUser);
-        notificationService.createNotification(registeredUser, "User " + registeredUser.getUsername() + " registered!");
+        notificationService.createNotification(registeredUser.getId(), "User " + registeredUser.getUsername() + " registered!");
         return registeredUser;
-    }
-
-    public Optional<User> login(String username) {
-        return users.stream()
-                .filter(u -> u.getUsername().equals(username))
-                .findFirst();
     }
 
     public User getUserById(Long id) {

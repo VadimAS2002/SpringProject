@@ -47,7 +47,7 @@ public class TaskControllerTest {
         User user = new User(1L, "testuser", "password");
         User registeredUser = userService.registerUser(user);
         Task taskToCreate = new Task(null, "Valid Task", "Description",
-                null, null, false, false, registeredUser);
+                null, null, false, false, registeredUser.getId());
 
         ResponseEntity<Task> responseEntity = taskController.createTask(taskToCreate);
         ResponseEntity<List<Task>> responseEntity2 = taskController.getPendingTasks();
@@ -62,7 +62,7 @@ public class TaskControllerTest {
         User user = new User(1L, "testuser", "password");
         User registeredUser = userService.registerUser(user);
         tasks.add(new Task(1L, "Task 1", "Description", now, now.plusDays(1), false,
-                false, registeredUser));
+                false, registeredUser.getId()));
 
         ResponseEntity<List<Task>> responseEntity = taskController.getAllTasksByUserId(userId);
 
@@ -74,7 +74,7 @@ public class TaskControllerTest {
         User user = new User(1L, "testuser", "password");
         User registeredUser = userService.registerUser(user);
         Task taskToCreate = new Task(null, "Valid Task", "Description",
-                null, null, false, false, registeredUser);
+                null, null, false, false, registeredUser.getId());
 
         ResponseEntity<Task> responseEntity = taskController.createTask(taskToCreate);
 
@@ -85,7 +85,7 @@ public class TaskControllerTest {
     public void deleteTask_ExistingTask_ReturnsNoContent() {
         Long taskId = 1L;
         Task existingTask = new Task(null, "Valid Task", "Description", null,
-                null, false, false, new User(1L, "test", "pass"));
+                null, false, false, 1L);
 
         ResponseEntity<Void> responseEntity = taskController.deleteTask(taskId);
 
@@ -98,7 +98,7 @@ public class TaskControllerTest {
         User user = new User(1L, "testuser", "password");
         User registeredUser = userService.registerUser(user);
         Task taskToCreate = new Task(null, null, "Description",
-                null, null, false, false, registeredUser);
+                null, null, false, false, registeredUser.getId());
 
         try {
             ResponseEntity<Task> responseEntity = taskController.createTask(taskToCreate);
@@ -113,7 +113,7 @@ public class TaskControllerTest {
         User user = new User(1L, "testuser", "password");
         User registeredUser = userService.registerUser(user);
         Task taskToCreate = new Task(null, "  ", "Description", null,
-                null, false, false, user);
+                null, false, false, user.getId());
 
         try {
             ResponseEntity<Task> responseEntity = taskController.createTask(taskToCreate);

@@ -28,14 +28,14 @@ public class TaskService {
 
     public List<Task> getAllTasksByUserId(Long userId) {
         return tasks.stream()
-                .filter(t -> !t.isDeleted() && t.getUser().getId().equals(userId))
+                .filter(t -> !t.isDeleted() && t.getUserId().equals(userId))
                 .collect(Collectors.toList());
     }
 
     public Task createTask(Task task) {
-        User user = userService.getUserById(task.getUser().getId());
+        User user = userService.getUserById(task.getUserId());
         if (user == null)
-            throw new IllegalArgumentException("User not found for userId: " + task.getUser().getId());
+            throw new IllegalArgumentException("User not found for userId: " + task.getUserId());
         if (task.getDescription() == null || task.getDescription().isEmpty())
             throw new InvalidDataException("Task description cannot be empty.");
         if (task.getTitle() == null || task.getTitle().isEmpty())
@@ -43,15 +43,15 @@ public class TaskService {
 
         task.setId(taskId.getAndIncrement());
         tasks.add(task);
-        task.setUser(user);
-        notificationService.createNotification(task.getUser(), "Task " + task.getTitle() + " created!");
+        task.setUserId(user.getId());
+        notificationService.createNotification(task.getUserId(), "Task " + task.getTitle() + " created!");
         return task;
     }
 
     public void deleteTask(Long id) {
         Task task = tasks.stream().filter(t -> t.getId().equals(id)).findFirst().orElse(null);
         if (task != null) {
-            notificationService.createNotification(task.getUser(), "Task " + task.getTitle() + " deleted!");
+            notificationService.createNotification(task.getUserId(), "Task " + task.getTitle() + " deleted!");
             tasks.stream().filter(t -> t.getId().equals(id)).forEach(t -> t.setDeleted(true));
         }
     }

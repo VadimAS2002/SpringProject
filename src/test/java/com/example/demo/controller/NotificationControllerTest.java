@@ -25,8 +25,8 @@ public class NotificationControllerTest {
     void getAllNotificationsForUser_ReturnsNotifications() {
         User user = new User(1L, "testuser", "password");
 
-        notificationService.createNotification(user, "Notification 1");
-        notificationService.createNotification(user, "Notification 2");
+        notificationService.createNotification(1L, "Notification 1");
+        notificationService.createNotification(1L, "Notification 2");
 
         ResponseEntity<List<Notification>> response = notificationController.getAllNotificationsForUser(user.getId());
 

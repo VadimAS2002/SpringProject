@@ -38,12 +38,6 @@ public class UserServiceTest {
     }
 
     @Test
-    void loginNotFoundTest() {
-        Optional<User> loggedInUser = userService.login("nonexistentuser");
-        assertTrue(loggedInUser.isEmpty());
-    }
-
-    @Test
     void findUserById() {
         User testUser2 = new User(null, "testuser2", "password2");
         User registeredUser = userService.registerUser(testUser2);
@@ -61,16 +55,5 @@ public class UserServiceTest {
         assertThrows(UserNotFoundException.class, () -> {
             userService.getUserById(userId);
         });
-    }
-
-    @Test
-    void findUserByUsername() {
-        User testUser2 = new User(null, "testuser3", "password3");
-        userService.registerUser(testUser2);
-
-        Optional<User> user = userService.login("testuser3");
-
-        assertEquals("testuser3", user.get().getUsername());
-        assertEquals("password3", user.get().getPassword());
     }
 }

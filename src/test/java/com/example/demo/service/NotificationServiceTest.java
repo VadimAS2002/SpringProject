@@ -27,8 +27,8 @@ class NotificationServiceTest {
 
     @Test
     public void createNotification_SuccessfulCreation() {
-        notificationService.createNotification(user, "This is a test notification.");
-        List<Notification> actualNotifications = notificationService.getAllNotificationsForUser(user);
+        notificationService.createNotification(user.getId(), "This is a test notification.");
+        List<Notification> actualNotifications = notificationService.getAllNotificationsForUser(user.getId());
         assertEquals(1, actualNotifications.size()); // Check size instead of message directly
         assertEquals("This is a test notification.", actualNotifications.get(0).getMessage());
     }
@@ -38,13 +38,13 @@ class NotificationServiceTest {
         String message = "";
 
         assertThrows(InvalidDataException.class, () -> {
-            notificationService.createNotification(user, message);
+            notificationService.createNotification(user.getId(), message);
         });
     }
 
     @Test
     public void getPendingNotifications_ReturnsNotifications() {
-        notificationService.createNotification(user, "This is a test notification.");
+        notificationService.createNotification(user.getId(), "This is a test notification.");
         List<Notification> actualNotifications = notificationService.getPendingNotifications();
         assertEquals(1, actualNotifications.size());
     }
