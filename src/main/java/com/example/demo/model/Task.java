@@ -18,17 +18,17 @@ public class Task {
     private LocalDateTime targetDate;
     private boolean completed;
     private boolean deleted;
-   private Long userId;
+    private Long userId;
 
     public Task(Long id, String title, String description, LocalDateTime creationDate, LocalDateTime targetDate,
                 boolean completed, boolean deleted, Long userId) {
-        this.id=id;
-        this.title=title;
-        this.description=description;
-        this.creationDate=creationDate;
-        this.targetDate=targetDate;
-        this.completed=completed;
-        this.deleted=deleted;
-        this.userId=userId;
+        this.id = id;
+        this.title = title;
+        this.description = description;
+        this.creationDate = creationDate;
+        this.targetDate = targetDate;
+        this.completed = completed;
+        this.deleted = deleted;
+        this.userId = userId;
     }
 }
