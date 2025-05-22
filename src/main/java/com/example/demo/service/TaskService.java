@@ -42,8 +42,8 @@ public class TaskService {
             throw new InvalidDataException("Task title cannot be empty.");
 
         task.setId(taskId.getAndIncrement());
-        tasks.add(task);
         task.setUserId(user.getId());
+        tasks.add(task);
         notificationService.createNotification(task.getUserId(), "Task " + task.getTitle() + " created!");
         return task;
     }

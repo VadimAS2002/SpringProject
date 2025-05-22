@@ -23,29 +23,49 @@ class NotificationServiceTest {
         notificationService = new NotificationService();
     }
 
-    User user = new User(1L, "testuser", "password");
-
     @Test
-    public void createNotification_SuccessfulCreation() {
-        notificationService.createNotification(user.getId(), "This is a test notification.");
-        List<Notification> actualNotifications = notificationService.getAllNotificationsForUser(user.getId());
-        assertEquals(1, actualNotifications.size()); // Check size instead of message directly
-        assertEquals("This is a test notification.", actualNotifications.get(0).getMessage());
+    void createNotification_ValidInput_CreatesNotification() {
+        notificationService.createNotification(1L, "Test notification");
+        List<Notification> notifications = notificationService.getAllNotificationsForUser(1L);
+        assertEquals(1, notifications.size());
+        assertEquals("Test notification", notifications.get(0).getMessage());
     }
 
     @Test
-    public void createNotification_InvalidMessage_ThrowsException() {
-        String message = "";
-
-        assertThrows(InvalidDataException.class, () -> {
-            notificationService.createNotification(user.getId(), message);
-        });
+    void createNotification_EmptyMessage_ThrowsInvalidDataException() {
+        assertThrows(InvalidDataException.class, () -> notificationService.createNotification(1L, ""));
     }
 
     @Test
-    public void getPendingNotifications_ReturnsNotifications() {
-        notificationService.createNotification(user.getId(), "This is a test notification.");
-        List<Notification> actualNotifications = notificationService.getPendingNotifications();
-        assertEquals(1, actualNotifications.size());
+    void getAllNotificationsForUser_ExistingNotifications_ReturnsNotifications() {
+        notificationService.createNotification(1L, "Test notification 1");
+        notificationService.createNotification(1L, "Test notification 2");
+        notificationService.createNotification(2L, "Test notification 3");
+
+        List<Notification> notifications = notificationService.getAllNotificationsForUser(1L);
+
+        assertEquals(2, notifications.size());
+        assertEquals("Test notification 1", notifications.get(0).getMessage());
+        assertEquals("Test notification 2", notifications.get(1).getMessage());
+    }
+
+    @Test
+    void getAllNotificationsForUser_NoNotifications_ReturnsEmptyList() {
+        List<Notification> notifications = notificationService.getAllNotificationsForUser(1L);
+        assertTrue(notifications.isEmpty());
+    }
+
+    @Test
+    void getPendingNotifications_ExistingPendingNotifications_ReturnsPendingNotifications() {
+        notificationService.createNotification(1L, "Test notification 1");
+        notificationService.createNotification(1L, "Test notification 2");
+        List<Notification> pendingNotifications = notificationService.getPendingNotifications();
+        assertEquals(2, pendingNotifications.size());
+    }
+
+    @Test
+    void getPendingNotifications_NoPendingNotifications_ReturnsEmptyList() {
+        List<Notification> pendingNotifications = notificationService.getPendingNotifications();
+        assertTrue(pendingNotifications.isEmpty());
     }
 }

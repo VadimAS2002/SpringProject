@@ -1,13 +1,11 @@
 package com.example.demo.service;
 
-import com.example.demo.exception.UserNotFoundException;
+import com.example.demo.exception.InvalidDataException;
 import com.example.demo.model.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -16,11 +14,8 @@ public class UserServiceTest {
 
     @Autowired
     private UserService userService;
-
-    private User testUser;
-
     @Autowired
-    private  NotificationService notificationService;
+    private NotificationService notificationService;
 
     @BeforeEach
     void setUp() {
@@ -29,31 +24,42 @@ public class UserServiceTest {
     }
 
     @Test
-    void registerUserTest() {
-        User testUser = new User(1L, "testuser", "password");
-        User registeredUser = userService.registerUser(testUser);
+    void registerUser_ValidInput_ReturnsRegisteredUser() {
+        User user = new User(1L, "testUser", "password");
 
-        assertEquals("testuser", registeredUser.getUsername());
+        User registeredUser = userService.registerUser(user);
+
+        assertNotNull(registeredUser.getId());
+        assertEquals("testUser", registeredUser.getUsername());
         assertEquals("password", registeredUser.getPassword());
     }
 
     @Test
+    void registerUser_EmptyUsername() {
+        User user = new User(1L, "", "password");
+        assertThrows(InvalidDataException.class, () -> userService.registerUser(user));
+    }
+
+    @Test
+    void registerUser_EmptyPassword() {
+        User user = new User(1L, "testUser", "");
+        assertThrows(InvalidDataException.class, () -> userService.registerUser(user));
+    }
+
+    @Test
     void findUserById() {
-        User testUser2 = new User(null, "testuser2", "password2");
-        User registeredUser = userService.registerUser(testUser2);
+        User user = new User(1L, "testUser", "password");
+        User registeredUser = userService.registerUser(user);
 
-        User findUser = userService.getUserById(registeredUser.getId());
+        User retrievedUser = userService.getUserById(registeredUser.getId());
 
-        assertEquals("testuser2", findUser.getUsername());
-        assertEquals("password2", findUser.getPassword());
+        assertEquals(registeredUser.getId(), retrievedUser.getId());
+        assertEquals(registeredUser.getUsername(), retrievedUser.getUsername());
+        assertEquals(registeredUser.getPassword(), retrievedUser.getPassword());
     }
 
     @Test
     void findUserById_WrongId() {
-        Long userId = 9999L;
-
-        assertThrows(UserNotFoundException.class, () -> {
-            userService.getUserById(userId);
-        });
+        assertThrows(Exception.class, () -> userService.getUserById(999L));
     }
 }

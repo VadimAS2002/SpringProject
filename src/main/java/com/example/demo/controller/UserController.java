@@ -17,15 +17,6 @@ public class UserController {
         this.userService = userService;
     }
 
-    @GetMapping("/login/{id}")
-    public ResponseEntity<Optional<User>> login(@PathVariable Long id) {
-        Optional<User> user = Optional.ofNullable(userService.getUserById(id));
-        if (user.isPresent()) {
-            return ResponseEntity.ok(user);
-        }
-        return ResponseEntity.notFound().build();
-    }
-
     @PostMapping("/register")
     public ResponseEntity<User> registerUser(@RequestBody User user) {
         return ResponseEntity.status(HttpStatus.CREATED).body(userService.registerUser(user));
